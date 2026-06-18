@@ -1,0 +1,29 @@
+# Xcode
+*.xcuserstate
+xcuserdata/
+.DS_Store
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+# NOTE: Package.resolved is intentionally committed for reproducible builds.
+.build/
+.swiftpm/
+
+# Firebase & Google Services — DO NOT commit real credentials
+GoogleService-Info.plist
+google-services.json
+.firebaserc
+
+# API Keys & Secrets
+.env
+.env.local
+*.key
+*.p12
+*.mobileprovision
+*.certSigningRequest

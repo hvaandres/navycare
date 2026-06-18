@@ -6,19 +6,32 @@
 //
 
 import SwiftUI
+import GoogleSignIn
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
-    }
-}
+    @Binding var hasCompletedOnboarding: Bool
+    @EnvironmentObject var authManager: AuthenticationManager
 
-#Preview {
-    ContentView()
+    var body: some View {
+        Group {
+            if !hasCompletedOnboarding {
+                OnBoardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
+            } else if authManager.isRestoringSession {
+                // Loading state while Firebase restores the persisted session.
+                ZStack {
+                    Color.black.ignoresSafeArea()
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(1.5)
+                }
+            } else if !authManager.isSignedIn {
+                LoginView(hasCompletedOnboarding: $hasCompletedOnboarding)
+            } else {
+                HomeView()
+            }
+        }
+        .onOpenURL { url in
+            GIDSignIn.sharedInstance.handle(url)
+        }
+    }
 }
