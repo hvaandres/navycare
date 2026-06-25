@@ -27,7 +27,7 @@ struct ContentView: View {
             } else if !authManager.isSignedIn {
                 LoginView(hasCompletedOnboarding: $hasCompletedOnboarding)
             } else {
-                HomeView()
+                MainTabView()
             }
         }
         .onOpenURL { url in
