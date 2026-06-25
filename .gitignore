@@ -20,9 +20,6 @@ GoogleService-Info.plist
 google-services.json
 .firebaserc
 
-# App Info
-Info.plist
-
 # API Keys & Secrets
 .env
 .env.local
