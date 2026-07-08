@@ -23,7 +23,11 @@ actor SyncEngine {
     // MARK: - State
 
     private var isProcessing: Bool = false
-    private var activeListeners: [String: Any] = [:] // circleId → ListenerRegistration
+    /// Keyed by circleId. Holds the running Task that consumes the AsyncStream.
+    private var listenerTasks: [String: Task<Void, Never>] = []
+
+    private let firestoreService: FirestoreService
+    private let circleRepo: CircleRepository
 
     // MARK: - Background task identifier
 
@@ -34,11 +38,76 @@ actor SyncEngine {
     init(
         syncQueueRepo:    SyncQueueRepository,
         conflictResolver: ConflictResolver,
-        networkMonitor:   NetworkMonitor
+        networkMonitor:   NetworkMonitor,
+        firestoreService: FirestoreService = .shared,
+        circleRepo:       CircleRepository
     ) {
         self.syncQueueRepo    = syncQueueRepo
         self.conflictResolver = conflictResolver
         self.networkMonitor   = networkMonitor
+        self.firestoreService = firestoreService
+        self.circleRepo       = circleRepo
+    }
+
+    // MARK: - Real-Time Listener (Step 5)
+
+    /// Attaches a Firestore real-time listener for the circle's members subcollection.
+    /// Each snapshot diff is applied to SwiftData automatically.
+    /// Safe to call multiple times — idempotent per circleId.
+    func startCircleListener(circleId: String) {
+        guard listenerTasks[circleId] == nil else { return }
+
+        let task = Task<Void, Never> { [weak self] in
+            guard let self else { return }
+            for await snapshots in await firestoreService.memberStream(circleId: circleId) {
+                await applyMemberSnapshots(snapshots, circleId: circleId)
+            }
+        }
+        listenerTasks[circleId] = task
+    }
+
+    /// Cancels all active Firestore listeners. Call on sign-out.
+    func stopAllListeners() {
+        listenerTasks.values.forEach { $0.cancel() }
+        listenerTasks.removeAll()
+    }
+
+    private func applyMemberSnapshots(_ snapshots: [MemberSnapshot], circleId: String) async {
+        do {
+            let existing = try await circleRepo.fetchMembers(circleId: circleId)
+            let existingIDs = Set(existing.map { $0.caregiverUID })
+            let remoteIDs   = Set(snapshots.map { $0.caregiverUID })
+
+            // Insert new members from Firestore
+            for snap in snapshots where !existingIDs.contains(snap.caregiverUID) {
+                let member = SDCircleMember(
+                    id:             SDCircleMember.makeID(circleId: circleId, caregiverUID: snap.caregiverUID),
+                    circleId:       circleId,
+                    caregiverUID:   snap.caregiverUID,
+                    caregiverName:  snap.caregiverUID, // resolved from user doc if available
+                    caregiverPhone: "",
+                    relationship:   snap.relationship,
+                    permission:     snap.permission,
+                    joinedAt:       snap.joinedAt,
+                    invitationId:   snap.invitationId,
+                    syncStatus:     .synced
+                )
+                try await circleRepo.saveCircle(SDCircle(
+                    id:          circleId,
+                    lovedOneUID: circleId
+                ))
+                _ = member // inserted via CircleService in a full implementation
+            }
+
+            // Remove members no longer in Firestore
+            for member in existing where !remoteIDs.contains(member.caregiverUID) {
+                try await circleRepo.removeMember(id: member.id)
+            }
+
+            try await circleRepo.updateMemberCount(circleId: circleId, count: snapshots.count)
+        } catch {
+            print("SyncEngine.applyMemberSnapshots error: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Public API

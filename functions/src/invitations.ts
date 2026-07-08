@@ -117,7 +117,10 @@ export const createInvitation = functions.https.onCall(
     });
 
     // Send SMS
-    const inviteURL = `https://navycare.com/invite/${plainToken}`;
+    // Uses Firebase Hosting URL — no custom domain required.
+    // Replace FIREBASE_HOSTING_URL env var with your project's .web.app URL.
+    const hostingURL = process.env.FIREBASE_HOSTING_URL ?? "https://navycare-app.web.app";
+    const inviteURL  = `${hostingURL}/invite/${plainToken}`;
     try {
       await getTwilioClient().messages.create({
         body: `${userDoc.data()?.firstName ?? "Someone"} invited you to join their care circle on Navycare. Tap to accept: ${inviteURL}`,

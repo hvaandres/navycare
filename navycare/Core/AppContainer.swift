@@ -94,7 +94,8 @@ final class AppContainer {
         let engine   = SyncEngine(
             syncQueueRepo:    syncQueueRepo,
             conflictResolver: resolver,
-            networkMonitor:   monitor
+            networkMonitor:   monitor,
+            circleRepo:       circleRepo
         )
 
         self.networkMonitor = monitor
