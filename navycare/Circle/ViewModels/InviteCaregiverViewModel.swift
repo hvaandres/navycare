@@ -22,6 +22,8 @@ final class InviteCaregiverViewModel {
     var hasSent: Bool = false
     var showingContactPicker: Bool = false
     var errorMessage: String?
+    /// Set after a successful CF call — the view presents a share sheet with this URL.
+    var inviteURL: URL?
 
     // MARK: - Computed
 
@@ -71,6 +73,7 @@ final class InviteCaregiverViewModel {
             struct Response: Decodable {
                 let invitationId: String
                 let expiresAt:    String
+                let inviteURL:    String
             }
 
             let response: Response = try await CloudFunctionCaller.shared.call(
@@ -82,6 +85,9 @@ final class InviteCaregiverViewModel {
                     permission:    permissionRaw
                 )
             )
+
+            // Store the invite URL so the view can present a share sheet
+            inviteURL = URL(string: response.inviteURL)
 
             // Build a local Caregiver for immediate orbit UI update
             let invitation = Invitation(

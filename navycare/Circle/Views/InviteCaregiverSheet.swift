@@ -48,8 +48,18 @@ struct InviteCaregiverSheet: View {
                 ContactPickerRepresentable(selectedContact: $viewModel.selectedContact)
                     .ignoresSafeArea()
             }
-            .onChange(of: viewModel.hasSent) { _, sent in
-                if sent { dismiss() }
+            // When CF returns the invite URL, show a share sheet first
+            .sheet(isPresented: Binding(
+                get:  { viewModel.inviteURL != nil },
+                set:  { if !$0 { viewModel.inviteURL = nil; dismiss() } }
+            )) {
+                if let url = viewModel.inviteURL {
+                    ShareSheet(items: [
+                        "\(viewModel.receiverName) is invited to join a Navy Care circle.",
+                        url
+                    ])
+                    .ignoresSafeArea()
+                }
             }
         }
     }
@@ -293,6 +303,19 @@ struct ContactPickerRepresentable: UIViewControllerRepresentable {
             // The picker dismisses itself — nothing else to do.
         }
     }
+}
+
+// MARK: - Share Sheet
+
+/// Wraps UIActivityViewController for the native iOS share sheet.
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // MARK: - Preview

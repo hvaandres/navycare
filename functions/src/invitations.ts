@@ -6,7 +6,6 @@
 
 import * as functions from "firebase-functions/v2";
 import * as admin      from "firebase-admin";
-import * as twilio     from "twilio";
 import {
   generateToken,
   hashToken,
@@ -16,15 +15,9 @@ import {
   writeAuditLog,
 } from "./security";
 
-const MAX_CAREGIVERS = 5;
+const MAX_CAREGIVERS  = 5;
 const INVITE_TTL_DAYS = 7;
-
-// Lazily initialize Twilio client from environment config
-function getTwilioClient(): twilio.Twilio {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID ?? "";
-  const authToken  = process.env.TWILIO_AUTH_TOKEN  ?? "";
-  return twilio.default(accountSid, authToken);
-}
+const HOSTING_URL     = process.env.FIREBASE_HOSTING_URL ?? "https://navycare-6cd3e.web.app";
 
 // MARK: - createInvitation
 
@@ -116,28 +109,20 @@ export const createInvitation = functions.https.onCall(
       acceptedByUID: null,
     });
 
-    // Send SMS
-    // Uses Firebase Hosting URL — no custom domain required.
-    // Replace FIREBASE_HOSTING_URL env var with your project's .web.app URL.
-    const hostingURL = process.env.FIREBASE_HOSTING_URL ?? "https://navycare-app.web.app";
-    const inviteURL  = `${hostingURL}/invite/${plainToken}`;
-    try {
-      await getTwilioClient().messages.create({
-        body: `${userDoc.data()?.firstName ?? "Someone"} invited you to join their care circle on Navycare. Tap to accept: ${inviteURL}`,
-        from: process.env.TWILIO_PHONE_NUMBER,
-        to:   receiverPhone,
-      });
-    } catch (smsError) {
-      // SMS failure should NOT roll back the invitation — log and continue
-      functions.logger.error("SMS send failed", { invitationId: invitationRef.id, smsError });
-    }
+    // Build invite URL — returned to the iOS client which presents a share sheet.
+    // No SMS service needed; the user chooses how to send (iMessage, WhatsApp, etc.).
+    const inviteURL = `${HOSTING_URL}/invite/${plainToken}`;
 
     await writeAuditLog(db, "invitation_sent", "invitation", invitationRef.id, uid, {
       receiverPhone: receiverPhone.slice(-4), // last 4 digits only
       permission,
     });
 
-    return { invitationId: invitationRef.id, expiresAt: expiresAt.toISOString() };
+    return {
+      invitationId: invitationRef.id,
+      expiresAt:    expiresAt.toISOString(),
+      inviteURL,            // client displays share sheet with this URL
+    };
   }
 );
 
