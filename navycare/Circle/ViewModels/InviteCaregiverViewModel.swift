@@ -47,44 +47,81 @@ final class InviteCaregiverViewModel {
 
     // MARK: - Actions
 
-    /// Sends the invitation and returns the new `Caregiver` on success, or `nil` on failure.
+    /// Calls the `createInvitation` Cloud Function, then returns a local `Caregiver`
+    /// for immediate UI update. Firestore is the source of truth for the server record.
     func sendInvitation() async -> Caregiver? {
         guard canSend else { return nil }
 
-        isSending = true
+        isSending    = true
         errorMessage = nil
 
-        // Simulate network request
+        // Normalize phone to E.164 (+1 prefix for US numbers)
+        let digits       = receiverPhone.filter(\.isNumber)
+        let e164Phone    = receiverPhone.hasPrefix("+") ? receiverPhone : "+1\(digits)"
+        let permissionRaw = permission.rawValue
+
         do {
-            try await Task.sleep(for: .seconds(1.2))
-        } catch {
+            // --- Call Cloud Function ---
+            struct Request: Encodable {
+                let receiverPhone: String
+                let receiverName:  String
+                let relationship:  String
+                let permission:    String
+            }
+            struct Response: Decodable {
+                let invitationId: String
+                let expiresAt:    String
+            }
+
+            let response: Response = try await CloudFunctionCaller.shared.call(
+                "createInvitation",
+                data: Request(
+                    receiverPhone: e164Phone,
+                    receiverName:  receiverName,
+                    relationship:  relationship.trimmingCharacters(in: .whitespaces),
+                    permission:    permissionRaw
+                )
+            )
+
+            // Build a local Caregiver for immediate orbit UI update
+            let invitation = Invitation(
+                id:            UUID(),
+                invitationId:  UUID(uuidString: response.invitationId) ?? UUID(),
+                senderUserId:  "",
+                receiverUserId: nil,
+                receiverName:  receiverName,
+                receiverPhone: e164Phone,
+                relationship:  relationship,
+                permission:    permission,
+                status:        .pending,
+                createdDate:   .now,
+                expirationDate: .now
+            )
+
+            let caregiver = Caregiver(
+                id:            UUID(),
+                name:          receiverName,
+                profileImageURL: nil,
+                relationship:  relationship,
+                permission:    permission,
+                invitation:    invitation,
+                isOnline:      false,
+                orbitPosition: 0
+            )
+
             isSending = false
-            errorMessage = "Request was cancelled."
+            hasSent   = true
+            return caregiver
+
+        } catch let cfError as CloudFunctionError {
+            isSending    = false
+            errorMessage = cfError.localizedDescription
+            return nil
+        } catch {
+            isSending    = false
+            errorMessage = error.localizedDescription
             return nil
         }
-
-        let invitation = Invitation.mock(
-            receiverName: receiverName,
-            receiverPhone: receiverPhone,
-            relationship: relationship,
-            status: .pending,
-            permission: permission
-        )
-
-        let caregiver = Caregiver(
-            id: UUID(),
-            name: receiverName,
-            profileImageURL: nil,
-            relationship: relationship,
-            permission: permission,
-            invitation: invitation,
-            isOnline: false,
-            orbitPosition: 0 // re-assigned by CircleViewModel
-        )
-
-        isSending = false
-        hasSent = true
-        return caregiver
     }
 
     func reset() {
