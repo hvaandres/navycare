@@ -115,7 +115,7 @@ extension SDSyncQueueItem {
         pow(4.0, Double(attemptCount))
     }
 
-    mutating func recordFailure(error: String) {
+    func recordFailure(error: String) {
         attemptCount += 1
         lastError     = error
         nextRetryAt   = Date.now.addingTimeInterval(nextBackoffDelay)

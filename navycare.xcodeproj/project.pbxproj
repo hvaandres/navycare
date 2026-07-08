@@ -10,6 +10,8 @@
 		FAB30000000000000000F001 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = FAB20000000000000000F001 /* FirebaseAuth */; };
 		FAB30000000000000000F002 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FAB20000000000000000F002 /* FirebaseCore */; };
 		FAB30000000000000000F003 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = FAB20000000000000000F003 /* GoogleSignIn */; };
+		FAB30000000000000000F004 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = FAB20000000000000000F004 /* FirebaseFirestore */; };
+		FAB30000000000000000F005 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = FAB20000000000000000F005 /* FirebaseMessaging */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +34,8 @@
 				FAB30000000000000000F001 /* FirebaseAuth in Frameworks */,
 				FAB30000000000000000F002 /* FirebaseCore in Frameworks */,
 				FAB30000000000000000F003 /* GoogleSignIn in Frameworks */,
+				FAB30000000000000000F004 /* FirebaseFirestore in Frameworks */,
+				FAB30000000000000000F005 /* FirebaseMessaging in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,6 +81,8 @@
 				FAB20000000000000000F001 /* FirebaseAuth */,
 				FAB20000000000000000F002 /* FirebaseCore */,
 				FAB20000000000000000F003 /* GoogleSignIn */,
+				FAB20000000000000000F004 /* FirebaseFirestore */,
+				FAB20000000000000000F005 /* FirebaseMessaging */,
 			);
 			productName = navycare;
 			productReference = A33FE2A32FDCC9A200E9941E /* navycare.app */;
@@ -387,6 +393,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FAB10000000000000000F002 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignIn;
+		};
+		FAB20000000000000000F004 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FAB10000000000000000F001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		FAB20000000000000000F005 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FAB10000000000000000F001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

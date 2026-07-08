@@ -24,7 +24,7 @@ actor SyncEngine {
 
     private var isProcessing: Bool = false
     /// Keyed by circleId. Holds the running Task that consumes the AsyncStream.
-    private var listenerTasks: [String: Task<Void, Never>] = []
+    private var listenerTasks: [String: Task<Void, Never>] = [:]
 
     private let firestoreService: FirestoreService
     private let circleRepo: CircleRepository

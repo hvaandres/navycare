@@ -38,7 +38,10 @@ private enum Keys {
 final class FirestoreService: @unchecked Sendable {
 
     static let shared = FirestoreService()
-    private let db = Firestore.firestore()
+
+    /// Computed so Firestore.firestore() is never called at init time.
+    /// FirebaseApp.configure() must run before any method on this class is called.
+    private var db: Firestore { Firestore.firestore() }
 
     private init() {}
 

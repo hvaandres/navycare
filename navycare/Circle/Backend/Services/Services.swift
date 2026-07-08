@@ -5,6 +5,7 @@
 // the SyncQueue — never touching ModelContext directly.
 
 import Foundation
+import SwiftData
 import CryptoKit
 
 // MARK: - Service Errors
@@ -65,12 +66,12 @@ final class InvitationService {
     ) async throws -> SDInvitation {
 
         // Local capacity check (fast path before hitting CF)
-        if let circle = try circleRepo.fetchCircle(for: senderUID), circle.isFull {
+        if let circle = try await circleRepo.fetchCircle(for: senderUID), circle.isFull {
             throw ServiceError.circleFull
         }
 
         // Duplicate check
-        if let _ = try invitationRepo.fetchPendingInvitation(phone: receiverPhone, circleId: circleId) {
+        if let _ = try await invitationRepo.fetchPendingInvitation(phone: receiverPhone, circleId: circleId) {
             throw ServiceError.duplicateInvitation
         }
 
@@ -90,7 +91,7 @@ final class InvitationService {
             tokenHash:     placeholderHash
         )
 
-        try invitationRepo.saveInvitation(invitation)
+        try await invitationRepo.saveInvitation(invitation)
 
         // Enqueue Firestore sync
         let payload = try JSONEncoder().encode(InvitationPayload(invitation: invitation))
@@ -100,21 +101,21 @@ final class InvitationService {
             operation:  .create,
             payload:    payload
         )
-        try syncQueue.enqueue(item)
+        try await syncQueue.enqueue(item)
 
         return invitation
     }
 
     /// Revokes a pending invitation locally and enqueues the update.
     func revokeInvitation(id: String, senderUID: String) async throws {
-        let invitations = try invitationRepo.fetchInvitations(senderUID: senderUID)
+        let invitations = try await invitationRepo.fetchInvitations(senderUID: senderUID)
         guard let invitation = invitations.first(where: { $0.id == id }) else {
             throw ServiceError.invitationNotFound
         }
         guard invitation.senderUID == senderUID else { throw ServiceError.unauthorized }
         guard invitation.isPending else { return } // already resolved
 
-        try invitationRepo.updateInvitationStatus(id: id, status: .expired, acceptedByUID: nil)
+        try await invitationRepo.updateInvitationStatus(id: id, status: .expired, acceptedByUID: nil)
 
         let payload = try JSONEncoder().encode(["invitationId": id, "status": "expired"])
         let item = SDSyncQueueItem(
@@ -123,7 +124,7 @@ final class InvitationService {
             operation:  .update,
             payload:    payload
         )
-        try syncQueue.enqueue(item)
+        try await syncQueue.enqueue(item)
     }
 }
 
@@ -143,11 +144,11 @@ final class CircleService {
 
     /// Removes a caregiver locally and enqueues the deletion for Firestore sync.
     func removeCaregiver(membershipId: String, circleId: String, actorUID: String) async throws {
-        try circleRepo.removeMember(id: membershipId)
+        try await circleRepo.removeMember(id: membershipId)
 
         // Update cached count
-        let members = try circleRepo.fetchMembers(circleId: circleId)
-        try circleRepo.updateMemberCount(circleId: circleId, count: members.count)
+        let members = try await circleRepo.fetchMembers(circleId: circleId)
+        try await circleRepo.updateMemberCount(circleId: circleId, count: members.count)
 
         let payload = try JSONEncoder().encode(["membershipId": membershipId, "circleId": circleId])
         let item = SDSyncQueueItem(
@@ -156,7 +157,7 @@ final class CircleService {
             operation:  .delete,
             payload:    payload
         )
-        try syncQueue.enqueue(item)
+        try await syncQueue.enqueue(item)
     }
 
     /// Applies a Firestore member snapshot received from a real-time listener.
@@ -168,8 +169,8 @@ final class CircleService {
         let context = member.modelContext
         context?.insert(member)
         try context?.save()
-        let members = try circleRepo.fetchMembers(circleId: circleId)
-        try circleRepo.updateMemberCount(circleId: circleId, count: members.count)
+        let members = try await circleRepo.fetchMembers(circleId: circleId)
+        try await circleRepo.updateMemberCount(circleId: circleId, count: members.count)
     }
 }
 

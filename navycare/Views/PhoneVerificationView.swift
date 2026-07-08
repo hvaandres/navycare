@@ -242,7 +242,7 @@ struct PhoneVerificationView: View {
                 .padding(.vertical, 15)
                 .background(disabled ? Color.secondary.opacity(0.2) : Color.accentColor,
                             in: RoundedRectangle(cornerRadius: 14))
-                .foregroundStyle(disabled ? .secondary : .white)
+            .foregroundStyle(disabled ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.white))
         }
         .disabled(disabled)
         .animation(.easeInOut(duration: 0.2), value: disabled)

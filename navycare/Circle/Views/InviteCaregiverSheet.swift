@@ -257,10 +257,13 @@ private extension String {
 // MARK: - Contact Picker Representable
 
 /// UIViewControllerRepresentable wrapper for CNContactPickerViewController.
+///
+/// NOTE: Do NOT call `dismiss()` in the delegate methods.
+/// CNContactPickerViewController dismisses itself after selection/cancel.
+/// Calling SwiftUI's dismiss() here would close the parent InviteCaregiverSheet.
 struct ContactPickerRepresentable: UIViewControllerRepresentable {
 
     @Binding var selectedContact: CNContact?
-    @Environment(\.dismiss) private var dismiss
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -282,12 +285,12 @@ struct ContactPickerRepresentable: UIViewControllerRepresentable {
             _ picker: CNContactPickerViewController,
             didSelect contact: CNContact
         ) {
+            // The picker dismisses itself — just update the binding.
             parent.selectedContact = contact
-            parent.dismiss()
         }
 
         func contactPickerDidCancel(_ picker: CNContactPickerViewController) {
-            parent.dismiss()
+            // The picker dismisses itself — nothing else to do.
         }
     }
 }

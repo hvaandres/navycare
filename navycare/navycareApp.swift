@@ -25,9 +25,9 @@ struct navycareApp: App {
     // MARK: - Init
 
     init() {
-        // Firebase must be configured before anything else
+        // Firebase is configured in AppDelegate.didFinishLaunchingWithOptions
+        // to guarantee it runs before @State property initialization.
         FirebaseConfiguration.shared.setLoggerLevel(.debug)
-        FirebaseApp.configure()
 
         // Configure Google Sign-In
         if let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),

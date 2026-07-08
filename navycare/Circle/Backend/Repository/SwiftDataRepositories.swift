@@ -32,18 +32,14 @@ final class CircleRepository: CircleRepositoryProtocol {
 
     init(context: ModelContext) { self.context = context }
 
-    func fetchCircle(for lovedOneUID: String) throws -> SDCircle? {
+    func fetchCircle(for lovedOneUID: String) async throws -> SDCircle? {
         let descriptor = FetchDescriptor<SDCircle>(
             predicate: #Predicate { $0.lovedOneUID == lovedOneUID }
         )
         return try context.fetch(descriptor).first
     }
 
-    nonisolated func fetchCircle(for lovedOneUID: String) async throws -> SDCircle? {
-        try await MainActor.run { try self.fetchCircle(for: lovedOneUID) }
-    }
-
-    func fetchMembers(circleId: String) throws -> [SDCircleMember] {
+    func fetchMembers(circleId: String) async throws -> [SDCircleMember] {
         let descriptor = FetchDescriptor<SDCircleMember>(
             predicate: #Predicate { $0.circleId == circleId },
             sortBy: [SortDescriptor(\.joinedAt)]
@@ -51,20 +47,12 @@ final class CircleRepository: CircleRepositoryProtocol {
         return try context.fetch(descriptor)
     }
 
-    nonisolated func fetchMembers(circleId: String) async throws -> [SDCircleMember] {
-        try await MainActor.run { try self.fetchMembers(circleId: circleId) }
-    }
-
-    func saveCircle(_ circle: SDCircle) throws {
+    func saveCircle(_ circle: SDCircle) async throws {
         context.insert(circle)
         try context.save()
     }
 
-    nonisolated func saveCircle(_ circle: SDCircle) async throws {
-        try await MainActor.run { try self.saveCircle(circle) }
-    }
-
-    func removeMember(id: String) throws {
+    func removeMember(id: String) async throws {
         let descriptor = FetchDescriptor<SDCircleMember>(
             predicate: #Predicate { $0.id == id }
         )
@@ -73,11 +61,7 @@ final class CircleRepository: CircleRepositoryProtocol {
         try context.save()
     }
 
-    nonisolated func removeMember(id: String) async throws {
-        try await MainActor.run { try self.removeMember(id: id) }
-    }
-
-    func updateMemberCount(circleId: String, count: Int) throws {
+    func updateMemberCount(circleId: String, count: Int) async throws {
         let descriptor = FetchDescriptor<SDCircle>(
             predicate: #Predicate { $0.id == circleId }
         )
@@ -86,10 +70,6 @@ final class CircleRepository: CircleRepositoryProtocol {
         circle.updatedAt   = .now
         circle.syncStatus  = .synced
         try context.save()
-    }
-
-    nonisolated func updateMemberCount(circleId: String, count: Int) async throws {
-        try await MainActor.run { try self.updateMemberCount(circleId: circleId, count: count) }
     }
 }
 
@@ -102,7 +82,7 @@ final class InvitationRepository: InvitationRepositoryProtocol {
 
     init(context: ModelContext) { self.context = context }
 
-    func fetchInvitations(senderUID: String) throws -> [SDInvitation] {
+    func fetchInvitations(senderUID: String) async throws -> [SDInvitation] {
         let descriptor = FetchDescriptor<SDInvitation>(
             predicate: #Predicate { $0.senderUID == senderUID },
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
@@ -110,11 +90,7 @@ final class InvitationRepository: InvitationRepositoryProtocol {
         return try context.fetch(descriptor)
     }
 
-    nonisolated func fetchInvitations(senderUID: String) async throws -> [SDInvitation] {
-        try await MainActor.run { try self.fetchInvitations(senderUID: senderUID) }
-    }
-
-    func fetchPendingInvitation(phone: String, circleId: String) throws -> SDInvitation? {
+    func fetchPendingInvitation(phone: String, circleId: String) async throws -> SDInvitation? {
         let pendingRaw = InvitationStatusBE.pending.rawValue
         let descriptor = FetchDescriptor<SDInvitation>(
             predicate: #Predicate {
@@ -126,20 +102,12 @@ final class InvitationRepository: InvitationRepositoryProtocol {
         return try context.fetch(descriptor).first
     }
 
-    nonisolated func fetchPendingInvitation(phone: String, circleId: String) async throws -> SDInvitation? {
-        try await MainActor.run { try self.fetchPendingInvitation(phone: phone, circleId: circleId) }
-    }
-
-    func saveInvitation(_ invitation: SDInvitation) throws {
+    func saveInvitation(_ invitation: SDInvitation) async throws {
         context.insert(invitation)
         try context.save()
     }
 
-    nonisolated func saveInvitation(_ invitation: SDInvitation) async throws {
-        try await MainActor.run { try self.saveInvitation(invitation) }
-    }
-
-    func updateInvitationStatus(id: String, status: InvitationStatusBE, acceptedByUID: String?) throws {
+    func updateInvitationStatus(id: String, status: InvitationStatusBE, acceptedByUID: String?) async throws {
         let descriptor = FetchDescriptor<SDInvitation>(
             predicate: #Predicate { $0.id == id }
         )
@@ -152,10 +120,6 @@ final class InvitationRepository: InvitationRepositoryProtocol {
         invitation.syncStatus    = .synced
         try context.save()
     }
-
-    nonisolated func updateInvitationStatus(id: String, status: InvitationStatusBE, acceptedByUID: String?) async throws {
-        try await MainActor.run { try self.updateInvitationStatus(id: id, status: status, acceptedByUID: acceptedByUID) }
-    }
 }
 
 // MARK: - User Repository
@@ -167,48 +131,32 @@ final class UserRepository: UserRepositoryProtocol {
 
     init(context: ModelContext) { self.context = context }
 
-    func fetchCurrentUser(uid: String) throws -> SDUserProfile? {
+    func fetchCurrentUser(uid: String) async throws -> SDUserProfile? {
         let descriptor = FetchDescriptor<SDUserProfile>(
             predicate: #Predicate { $0.uid == uid }
         )
         return try context.fetch(descriptor).first
     }
 
-    nonisolated func fetchCurrentUser(uid: String) async throws -> SDUserProfile? {
-        try await MainActor.run { try self.fetchCurrentUser(uid: uid) }
-    }
-
-    func saveUser(_ profile: SDUserProfile) throws {
+    func saveUser(_ profile: SDUserProfile) async throws {
         context.insert(profile)
         try context.save()
     }
 
-    nonisolated func saveUser(_ profile: SDUserProfile) async throws {
-        try await MainActor.run { try self.saveUser(profile) }
-    }
-
-    func updateFCMToken(uid: String, token: String) throws {
-        guard let profile = try fetchCurrentUser(uid: uid) else { return }
+    func updateFCMToken(uid: String, token: String) async throws {
+        guard let profile = try await fetchCurrentUser(uid: uid) else { return }
         profile.fcmToken   = token
         profile.updatedAt  = .now
         profile.syncStatus = .pendingUpdate
         try context.save()
     }
 
-    nonisolated func updateFCMToken(uid: String, token: String) async throws {
-        try await MainActor.run { try self.updateFCMToken(uid: uid, token: token) }
-    }
-
-    func updateRole(uid: String, role: UserRole) throws {
-        guard let profile = try fetchCurrentUser(uid: uid) else { return }
+    func updateRole(uid: String, role: UserRole) async throws {
+        guard let profile = try await fetchCurrentUser(uid: uid) else { return }
         profile.role       = role
         profile.updatedAt  = .now
         profile.syncStatus = .pendingUpdate
         try context.save()
-    }
-
-    nonisolated func updateRole(uid: String, role: UserRole) async throws {
-        try await MainActor.run { try self.updateRole(uid: uid, role: role) }
     }
 }
 
@@ -221,7 +169,7 @@ final class SyncQueueRepository: SyncQueueRepositoryProtocol {
 
     init(context: ModelContext) { self.context = context }
 
-    func fetchPendingItems() throws -> [SDSyncQueueItem] {
+    func fetchPendingItems() async throws -> [SDSyncQueueItem] {
         let now  = Date.now
         let descriptor = FetchDescriptor<SDSyncQueueItem>(
             predicate: #Predicate {
@@ -233,20 +181,12 @@ final class SyncQueueRepository: SyncQueueRepositoryProtocol {
         return try context.fetch(descriptor)
     }
 
-    nonisolated func fetchPendingItems() async throws -> [SDSyncQueueItem] {
-        try await MainActor.run { try self.fetchPendingItems() }
-    }
-
-    func enqueue(_ item: SDSyncQueueItem) throws {
+    func enqueue(_ item: SDSyncQueueItem) async throws {
         context.insert(item)
         try context.save()
     }
 
-    nonisolated func enqueue(_ item: SDSyncQueueItem) async throws {
-        try await MainActor.run { try self.enqueue(item) }
-    }
-
-    func dequeue(id: String) throws {
+    func dequeue(id: String) async throws {
         let descriptor = FetchDescriptor<SDSyncQueueItem>(
             predicate: #Predicate { $0.id == id }
         )
@@ -255,11 +195,7 @@ final class SyncQueueRepository: SyncQueueRepositoryProtocol {
         try context.save()
     }
 
-    nonisolated func dequeue(id: String) async throws {
-        try await MainActor.run { try self.dequeue(id: id) }
-    }
-
-    func recordFailure(id: String, error: String) throws {
+    func recordFailure(id: String, error: String) async throws {
         let descriptor = FetchDescriptor<SDSyncQueueItem>(
             predicate: #Predicate { $0.id == id }
         )
@@ -270,9 +206,5 @@ final class SyncQueueRepository: SyncQueueRepositoryProtocol {
         item.nextRetryAt   = Date.now.addingTimeInterval(delay)
         if item.attemptCount >= item.maxAttempts { item.isFailed = true }
         try context.save()
-    }
-
-    nonisolated func recordFailure(id: String, error: String) async throws {
-        try await MainActor.run { try self.recordFailure(id: id, error: error) }
     }
 }

@@ -9,9 +9,22 @@
 //   @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
 import UIKit
+import FirebaseCore
 import FirebaseAuth
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
+
+    // MARK: - App Launch
+
+    /// Configure Firebase here — this runs before ANY SwiftUI @State properties
+    /// are initialized, preventing "FirebaseApp not configured" crashes.
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        FirebaseApp.configure()
+        return true
+    }
 
     // MARK: - APNs Token
 
