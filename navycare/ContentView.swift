@@ -28,7 +28,7 @@ struct ContentView: View {
             } else if !authManager.isSignedIn {
                 LoginView(hasCompletedOnboarding: $hasCompletedOnboarding)
             } else {
-                HomeView()
+                MainTabView()
             }
         }
         // Deep link — invitation acceptance sheet
