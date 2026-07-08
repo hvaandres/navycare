@@ -11,6 +11,7 @@ import GoogleSignIn
 struct ContentView: View {
     @Binding var hasCompletedOnboarding: Bool
     @EnvironmentObject var authManager: AuthenticationManager
+    @Environment(DeepLinkHandler.self) private var deepLinkHandler
 
     var body: some View {
         Group {
@@ -30,8 +31,24 @@ struct ContentView: View {
                 HomeView()
             }
         }
-        .onOpenURL { url in
-            GIDSignIn.sharedInstance.handle(url)
+        // Deep link — invitation acceptance sheet
+        .sheet(isPresented: .constant(deepLinkHandler.hasPendingInvitation && authManager.isSignedIn)) {
+            if let token = deepLinkHandler.pendingInvitationToken {
+                InvitationAcceptanceView(token: token) {
+                    deepLinkHandler.consume()
+                }
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(28)
+                .interactiveDismissDisabled()
+            }
+        }
+        // When a deep link arrives before sign-in, it waits here.
+        // Once isSignedIn flips to true, the sheet auto-presents.
+        .onChange(of: authManager.isSignedIn) { _, signedIn in
+            if signedIn, deepLinkHandler.hasPendingInvitation {
+                // Sheet will auto-present via the .sheet binding above
+            }
         }
     }
 }
