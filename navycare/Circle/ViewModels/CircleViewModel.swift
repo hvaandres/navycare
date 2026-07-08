@@ -90,4 +90,10 @@ final class CircleViewModel {
         showingMemberCard = false
         selectedCaregiver = nil
     }
+
+    /// Persists edits made inside CircleMemberCard.
+    func updateCaregiver(_ updated: Caregiver) {
+        guard let index = caregivers.firstIndex(where: { $0.id == updated.id }) else { return }
+        caregivers[index] = updated
+    }
 }

@@ -14,46 +14,93 @@ private let avatarPalette: [[Color]] = [
     [.green,  .teal   ]
 ]
 
-/// Full-detail sheet for a Circle member.
+/// Full-detail sheet for a Circle member, with inline editing for relationship and access level.
 struct CircleMemberCard: View {
 
     let caregiver: Caregiver
+    let onSave:    (Caregiver) -> Void
     let onRemove:  () -> Void
 
+    // Editable copies of mutable fields
+    @State private var editedRelationship: String
+    @State private var editedPermission:   Permission
+    @State private var isEditing:          Bool = false
+    @State private var showRemoveAlert:    Bool = false
+
     @Environment(\.dismiss) private var dismiss
+
+    init(caregiver: Caregiver, onSave: @escaping (Caregiver) -> Void, onRemove: @escaping () -> Void) {
+        self.caregiver = caregiver
+        self.onSave    = onSave
+        self.onRemove  = onRemove
+        _editedRelationship = State(initialValue: caregiver.relationship)
+        _editedPermission   = State(initialValue: caregiver.permission)
+    }
+
+    private var hasChanges: Bool {
+        editedRelationship != caregiver.relationship ||
+        editedPermission   != caregiver.permission
+    }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 28) {
+                VStack(spacing: 24) {
 
-                    // Avatar
                     avatarSection
-
-                    // Name, relationship & badges
                     identitySection
-
-                    // Info rows
+                    editSection
                     infoSection
-
-                    // Permission description
-                    permissionSection
-
-                    // Remove button
                     removeButton
                 }
                 .padding(20)
                 .padding(.bottom, 8)
             }
-            .navigationTitle("Circle Member")
+            .navigationTitle(isEditing ? "Edit Member" : "Circle Member")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    if isEditing {
+                        Button("Cancel") {
+                            // revert
+                            editedRelationship = caregiver.relationship
+                            editedPermission   = caregiver.permission
+                            isEditing = false
+                        }
+                        .foregroundStyle(.secondary)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
-                        .fontWeight(.semibold)
+                    if isEditing {
+                        Button("Save") { saveChanges() }
+                            .fontWeight(.semibold)
+                            .disabled(!hasChanges)
+                    } else {
+                        Button("Edit") { isEditing = true }
+                            .fontWeight(.medium)
+                    }
                 }
             }
+            .alert("Remove \(caregiver.firstName)?" , isPresented: $showRemoveAlert) {
+                Button("Remove", role: .destructive) {
+                    onRemove()
+                    dismiss()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("\(caregiver.firstName) will lose access to the care circle.")
+            }
         }
+    }
+
+    // MARK: - Save
+
+    private func saveChanges() {
+        var updated = caregiver
+        updated.relationship = editedRelationship.trimmingCharacters(in: .whitespaces)
+        updated.permission   = editedPermission
+        onSave(updated)
+        isEditing = false
     }
 
     // MARK: - Sections
@@ -85,12 +132,12 @@ struct CircleMemberCard: View {
                 .font(.title2.weight(.bold))
                 .multilineTextAlignment(.center)
 
-            Text(caregiver.relationship)
+            Text(isEditing ? editedRelationship : caregiver.relationship)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 8) {
-                PermissionBadge(permission: caregiver.permission)
+                PermissionBadge(permission: isEditing ? editedPermission : caregiver.permission)
                 if let status = caregiver.invitationStatus {
                     InvitationStatusBadge(status: status)
                 }
@@ -98,14 +145,85 @@ struct CircleMemberCard: View {
         }
     }
 
+    /// Editable fields — shown always, locked when not editing.
+    private var editSection: some View {
+        VStack(spacing: 16) {
+
+            // Relationship
+            VStack(alignment: .leading, spacing: 6) {
+                Label("Relationship", systemImage: "person.2.fill")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                if isEditing {
+                    TextField("e.g. Daughter, Doctor, Friend", text: $editedRelationship)
+                        .textFieldStyle(.plain)
+                        .padding(14)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.accentColor.opacity(0.4), lineWidth: 1)
+                        )
+                        .submitLabel(.done)
+                } else {
+                    Text(caregiver.relationship)
+                        .font(.body)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(14)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(.white.opacity(0.12), lineWidth: 0.5)
+                        )
+                }
+            }
+
+            // Access Level
+            VStack(alignment: .leading, spacing: 6) {
+                Label("Access Level", systemImage: "lock.fill")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                if isEditing {
+                    Picker("Access Level", selection: $editedPermission) {
+                        ForEach(Permission.allCases, id: \.self) { perm in
+                            Text(perm.displayName).tag(perm)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    Text(editedPermission.accessDescription)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 2)
+                        .animation(.easeInOut(duration: 0.2), value: editedPermission)
+                } else {
+                    HStack {
+                        PermissionBadge(permission: caregiver.permission)
+                        Spacer()
+                        Text(caregiver.permission.accessDescription)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.trailing)
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(isEditing ? Color.accentColor.opacity(0.3) : .white.opacity(0.12), lineWidth: 0.5)
+        )
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isEditing)
+    }
+
     private var infoSection: some View {
         VStack(spacing: 0) {
             if let phone = caregiver.invitation?.receiverPhone {
-                infoRow(icon: "phone.fill",    label: "Phone",      value: phone)
+                infoRow(icon: "phone.fill", label: "Phone", value: phone)
                 rowDivider
             }
-            infoRow(icon: "person.fill",       label: "Role",       value: caregiver.relationship)
-            rowDivider
             infoRow(
                 icon:       "circle.fill",
                 label:      "Status",
@@ -117,26 +235,9 @@ struct CircleMemberCard: View {
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(0.12), lineWidth: 0.5))
     }
 
-    private var permissionSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("Access Level", systemImage: caregiver.permission.systemImage)
-                .font(.subheadline.weight(.semibold))
-
-            Text(caregiver.permission.accessDescription)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(0.12), lineWidth: 0.5))
-    }
-
     private var removeButton: some View {
         Button(role: .destructive) {
-            onRemove()
-            dismiss()
+            showRemoveAlert = true
         } label: {
             Label("Remove from Circle", systemImage: "minus.circle.fill")
                 .font(.body.weight(.semibold))
@@ -189,6 +290,7 @@ struct CircleMemberCard: View {
 #Preview {
     CircleMemberCard(
         caregiver: Caregiver.mockData[0],
+        onSave:    { _ in },
         onRemove:  {}
     )
 }

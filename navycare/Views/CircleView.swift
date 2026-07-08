@@ -54,19 +54,26 @@ struct CircleView: View {
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(28)
             }
-            // Member detail card
-            .sheet(item: $viewModel.selectedCaregiver) { caregiver in
-                CircleMemberCard(
-                    caregiver: caregiver,
-                    onRemove: {
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
-                            viewModel.removeCaregiver(caregiver)
+            // Member detail card — use isPresented to avoid race with TimelineView redraws
+            .sheet(isPresented: $viewModel.showingMemberCard, onDismiss: {
+                viewModel.selectedCaregiver = nil
+            }) {
+                if let caregiver = viewModel.selectedCaregiver {
+                    CircleMemberCard(
+                        caregiver: caregiver,
+                        onSave: { updated in
+                            viewModel.updateCaregiver(updated)
+                        },
+                        onRemove: {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                                viewModel.removeCaregiver(caregiver)
+                            }
                         }
-                    }
-                )
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
-                .presentationCornerRadius(28)
+                    )
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
+                    .presentationCornerRadius(28)
+                }
             }
         }
     }
