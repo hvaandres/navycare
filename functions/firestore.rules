@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // USERS
+    // Each user can only read and update their own profile.
+    // Creation is handled by the onUserCreated Cloud Function.
+    // The client may only update fcmTokens and updatedAt (to register devices).
+    // ─────────────────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+
+      // Clients may update only non-sensitive fields
+      allow update: if isOwner(userId)
+        && request.resource.data.diff(resource.data)
+              .affectedKeys()
+              .hasOnly(["fcmTokens", "updatedAt"]);
+
+      allow create, delete: if false; // CF only
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CIRCLES
+    // The Loved One and active members can read.
+    // All writes are CF-only (createInvitation, acceptInvitation, removeCaregiver).
+    // ─────────────────────────────────────────────────────────────────────────
+    match /circles/{circleId} {
+      allow read: if isLovedOne(circleId) || isActiveMember(circleId);
+      allow write: if false;
+
+      // ──────────────────────────────────────────
+      // MEMBERS subcollection
+      // ──────────────────────────────────────────
+      match /members/{memberId} {
+        allow read: if isLovedOne(circleId) || isActiveMember(circleId);
+        allow write: if false;
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // INVITATIONS
+    // Sender and accepted-by user can read their own invitations.
+    // All writes are CF-only.
+    // tokenHash is never returned to clients — they must call validateInvitationToken.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /invitations/{invitationId} {
+      allow read: if request.auth != null
+        && (request.auth.uid == resource.data.senderUID
+            || request.auth.uid == resource.data.acceptedByUID);
+      allow write: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // AUDIT LOGS — write-only via CF, no client read access
+    // ─────────────────────────────────────────────────────────────────────────
+    match /auditLogs/{logId} {
+      allow read, write: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // RATE LIMITS — CF-maintained, no client access
+    // ─────────────────────────────────────────────────────────────────────────
+    match /rateLimits/{userId} {
+      allow read, write: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // HELPER FUNCTIONS
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /// Returns true when the caller owns the resource.
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    /// Returns true when the caller is the Loved One of the circle.
+    function isLovedOne(circleId) {
+      return request.auth != null
+        && get(/databases/$(database)/documents/circles/$(circleId))
+             .data.lovedOneUID == request.auth.uid;
+    }
+
+    /// Returns true when the caller is an active member of the circle.
+    /// The member document uses the caregiverUID as its document ID.
+    function isActiveMember(circleId) {
+      return request.auth != null
+        && exists(
+             /databases/$(database)/documents/circles/$(circleId)/members/$(request.auth.uid)
+           );
+    }
+  }
+}
