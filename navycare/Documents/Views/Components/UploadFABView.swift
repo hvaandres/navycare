@@ -118,7 +118,6 @@ struct UploadFABView: View {
                 .delay(Double(index) * 0.04),
             value: isExpanded
         )
-        .sensoryFeedback(.selection, trigger: isExpanded)
     }
 
     private func collapse() {
