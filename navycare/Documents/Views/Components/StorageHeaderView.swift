@@ -10,9 +10,9 @@ struct StorageHeaderView: View {
     let storageProgress: Double
     let layoutMode:     DocumentLayoutMode
     let onLayoutToggle: () -> Void
-
+    
     @State private var ringProgress: Double = 0
-
+    
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             // Title block
@@ -24,9 +24,9 @@ struct StorageHeaderView: View {
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.50))
             }
-
+            
             Spacer()
-
+            
             // Right side — storage ring + badges + layout toggle
             VStack(alignment: .trailing, spacing: 10) {
                 // Storage ring
@@ -40,10 +40,10 @@ struct StorageHeaderView: View {
                             .vaultGlass(cornerRadius: 10, opacity: 0.1)
                     }
                     .buttonStyle(.plain)
-
+                    
                     storageRing
                 }
-
+                
                 // Badges row
                 HStack(spacing: 6) {
                     statusBadge(icon: "lock.shield.fill", label: "AES-256",  color: .vaultSuccess)
@@ -62,6 +62,7 @@ struct StorageHeaderView: View {
                 ringProgress = newValue
             }
         }
+    }
 
     // MARK: - Storage Ring
 
@@ -75,8 +76,10 @@ struct StorageHeaderView: View {
                 .trim(from: 0, to: ringProgress)
                 .stroke(
                     AngularGradient(
-                        colors: [.vaultBlue, .vaultCyan, .vaultBlue],
-                        center: .center
+                        colors: [Color.vaultBlue, Color.vaultCyan, Color.vaultBlue],
+                        center: .center,
+                        startAngle: .degrees(0),
+                        endAngle:   .degrees(360)
                     ),
                     style: StrokeStyle(lineWidth: 4, lineCap: .round)
                 )
@@ -114,76 +117,76 @@ struct StorageHeaderView: View {
 // MARK: - Files Search Bar
 
 struct FilesSearchBarView: View {
-    @Binding var searchText:     String
-    @Binding var isSearchActive: Bool
-
-    @FocusState private var isFocused: Bool
-
-    var body: some View {
-        HStack(spacing: 10) {
+        @Binding var searchText:     String
+        @Binding var isSearchActive: Bool
+        
+        @FocusState private var isFocused: Bool
+        
+        var body: some View {
             HStack(spacing: 10) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(isFocused ? Color.vaultBlue : Color.white.opacity(0.45))
-
-                TextField("Search files, tags, categories…", text: $searchText)
-                    .font(.system(size: 15))
-                    .foregroundStyle(.white)
-                    .tint(.vaultBlue)
-                    .focused($isFocused)
-
-                if !searchText.isEmpty {
-                    Button {
-                        searchText = ""
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.white.opacity(0.4))
+                HStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(isFocused ? Color.vaultBlue : Color.white.opacity(0.45))
+                    
+                    TextField("Search files, tags, categories…", text: $searchText)
+                        .font(.system(size: 15))
+                        .foregroundStyle(.white)
+                        .tint(.vaultBlue)
+                        .focused($isFocused)
+                    
+                    if !searchText.isEmpty {
+                        Button {
+                            searchText = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 14))
+                                .foregroundStyle(.white.opacity(0.4))
+                        }
+                        .buttonStyle(.plain)
+                        .transition(.scale.combined(with: .opacity))
                     }
-                    .buttonStyle(.plain)
-                    .transition(.scale.combined(with: .opacity))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 11)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.white.opacity(isFocused ? 0.11 : 0.07))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .strokeBorder(
+                                    isFocused ? Color.vaultBlue.opacity(0.6) : Color.white.opacity(0.12),
+                                    lineWidth: isFocused ? 1 : 0.5
+                                )
+                        )
+                )
+                .shadow(
+                    color: isFocused ? Color.vaultBlue.opacity(0.25) : Color.clear,
+                    radius: 12, x: 0, y: 4
+                )
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isFocused)
+                
+                if isSearchActive {
+                    Button("Cancel") {
+                        searchText = ""
+                        isSearchActive = false
+                        isFocused = false
+                    }
+                    .font(.system(size: 15))
+                    .foregroundStyle(Color.vaultBlue)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 11)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.white.opacity(isFocused ? 0.11 : 0.07))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(
-                                isFocused ? Color.vaultBlue.opacity(0.6) : Color.white.opacity(0.12),
-                                lineWidth: isFocused ? 1 : 0.5
-                            )
-                    )
-            )
-            .shadow(
-                color: isFocused ? Color.vaultBlue.opacity(0.25) : Color.clear,
-                radius: 12, x: 0, y: 4
-            )
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isFocused)
-
-            if isSearchActive {
-                Button("Cancel") {
-                    searchText = ""
-                    isSearchActive = false
-                    isFocused = false
+            .padding(.horizontal, 20)
+            .onChange(of: isFocused) { _, focused in
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                    isSearchActive = focused
                 }
-                .font(.system(size: 15))
-                .foregroundStyle(Color.vaultBlue)
-                .transition(.move(edge: .trailing).combined(with: .opacity))
             }
+            .animation(.spring(response: 0.3, dampingFraction: 0.75), value: isSearchActive)
         }
-        .padding(.horizontal, 20)
-        .onChange(of: isFocused) { _, focused in
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                isSearchActive = focused
-            }
-        }
-        .animation(.spring(response: 0.3, dampingFraction: 0.75), value: isSearchActive)
     }
-}
-
+    
 // MARK: - Preview
 
 #Preview {
