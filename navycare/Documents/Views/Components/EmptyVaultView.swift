@@ -27,7 +27,7 @@ struct EmptyVaultView: View {
                                 lineWidth: 1.2
                             )
                             .frame(width: CGFloat(90 + i * 28), height: CGFloat(90 + i * 28))
-                            .scaleEffect(glowPulse ? 1.12 + Double(i) * 0.04 : 1.0)
+                            .scaleEffect(glowPulse ? CGFloat(1.12 + Double(i) * 0.04) : 1.0)
                             .animation(
                                 .easeInOut(duration: 2.2 + Double(i) * 0.3)
                                     .repeatForever(autoreverses: true)
