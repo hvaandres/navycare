@@ -166,7 +166,7 @@ struct FilesSearchBarView: View {
                     isFocused = false
                 }
                 .font(.system(size: 15))
-                .foregroundStyle(.vaultBlue)
+                .foregroundStyle(Color.vaultBlue)
                 .transition(.move(edge: .trailing).combined(with: .opacity))
             }
         }

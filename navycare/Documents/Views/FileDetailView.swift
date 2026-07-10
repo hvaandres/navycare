@@ -79,7 +79,7 @@ struct FileDetailView: View {
                         onFavorite()
                     } label: {
                         Image(systemName: document.isFavorite ? "star.fill" : "star")
-                            .foregroundStyle(document.isFavorite ? .vaultWarning : .white.opacity(0.6))
+                            .foregroundStyle(document.isFavorite ? Color.vaultWarning : Color.white.opacity(0.6))
                     }
                 }
             }
