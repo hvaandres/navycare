@@ -78,7 +78,7 @@ struct DocumentFile: Identifiable, Codable, Sendable {
     var isOffline:   Bool
     var isVerified:  Bool
     var tags:        [String]
-    var notes:       String?
+    var notes:       String? = nil
     var sharedCount: Int
     /// SF Symbol name used as placeholder thumbnail
     var thumbnailSymbol: String
