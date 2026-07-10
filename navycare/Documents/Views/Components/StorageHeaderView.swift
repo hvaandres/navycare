@@ -120,7 +120,7 @@ struct FilesSearchBarView: View {
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(isFocused ? .vaultBlue : .white.opacity(0.45))
+                    .foregroundStyle(isFocused ? Color.vaultBlue : Color.white.opacity(0.45))
 
                 TextField("Search files, tags, categories…", text: $searchText)
                     .font(.system(size: 15))
@@ -147,14 +147,14 @@ struct FilesSearchBarView: View {
                     .fill(Color.white.opacity(isFocused ? 0.11 : 0.07))
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
-                            .strokeBorder(
-                                isFocused ? .vaultBlue.opacity(0.6) : .white.opacity(0.12),
+                    .strokeBorder(
+                                isFocused ? Color.vaultBlue.opacity(0.6) : Color.white.opacity(0.12),
                                 lineWidth: isFocused ? 1 : 0.5
                             )
                     )
             )
             .shadow(
-                color: isFocused ? .vaultBlue.opacity(0.25) : .clear,
+                color: isFocused ? Color.vaultBlue.opacity(0.25) : Color.clear,
                 radius: 12, x: 0, y: 4
             )
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isFocused)

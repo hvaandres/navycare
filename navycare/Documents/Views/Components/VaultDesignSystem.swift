@@ -139,10 +139,10 @@ struct EncryptedBadgeView: View {
             Text("Encrypted")
                 .font(.system(size: 8, weight: .semibold))
         }
-        .foregroundStyle(.vaultSuccess)
+        .foregroundStyle(Color.vaultSuccess)
         .padding(.horizontal, 7)
         .padding(.vertical, 3)
-        .background(.vaultSuccess.opacity(0.12), in: Capsule())
-        .overlay(Capsule().stroke(.vaultSuccess.opacity(0.3), lineWidth: 0.4))
+        .background(Color.vaultSuccess.opacity(0.12), in: Capsule())
+        .overlay(Capsule().stroke(Color.vaultSuccess.opacity(0.3), lineWidth: 0.4))
     }
 }

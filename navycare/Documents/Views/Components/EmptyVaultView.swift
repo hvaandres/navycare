@@ -130,7 +130,7 @@ struct SmartSuggestionsView: View {
                 HStack {
                     Label("AI Insights", systemImage: "sparkles")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.vaultCyan)
+                        .foregroundStyle(Color.vaultCyan)
                     Spacer()
                 }
                 .padding(.horizontal, 20)

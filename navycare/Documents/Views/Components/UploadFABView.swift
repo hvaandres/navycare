@@ -49,8 +49,8 @@ struct UploadFABView: View {
                     ZStack {
                         // Pulse ring (idle only)
                         if !isExpanded && !reduceMotion {
-                            Circle()
-                                .stroke(.vaultBlue.opacity(0.35), lineWidth: 2)
+                        Circle()
+                            .stroke(Color.vaultBlue.opacity(0.35), lineWidth: 2)
                                 .frame(width: fabSize + 14, height: fabSize + 14)
                                 .scaleEffect(pulseScale)
                                 .opacity(2.0 - pulseScale)

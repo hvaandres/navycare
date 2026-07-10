@@ -83,7 +83,7 @@ struct FileCardView: View {
             Button(action: onFavorite) {
                 Image(systemName: document.isFavorite ? "star.fill" : "star")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(document.isFavorite ? .vaultWarning : .white.opacity(0.4))
+                .foregroundStyle(document.isFavorite ? Color.vaultWarning : Color.white.opacity(0.4))
                     .padding(8)
             }
             .buttonStyle(.plain)
@@ -166,12 +166,12 @@ struct FileRowView: View {
                     if document.isFavorite {
                         Image(systemName: "star.fill")
                             .font(.caption2)
-                            .foregroundStyle(.vaultWarning)
+                            .foregroundStyle(Color.vaultWarning)
                     }
                     if document.isEncrypted {
                         Image(systemName: "lock.fill")
                             .font(.caption2)
-                            .foregroundStyle(.vaultSuccess)
+                            .foregroundStyle(Color.vaultSuccess)
                     }
                 }
 

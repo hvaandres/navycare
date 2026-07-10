@@ -186,7 +186,7 @@ struct FileDetailView: View {
                 .foregroundStyle(.white.opacity(0.5))
 
             HStack(spacing: -8) {
-                ForEach(DocumentShare.mockShares.prefix(3)) { share in
+            ForEach(Array(DocumentShare.mockShares.prefix(3))) { share in
                     ZStack {
                         Circle()
                             .fill(Color(hex: "#2563EB").opacity(0.8))
@@ -195,7 +195,7 @@ struct FileDetailView: View {
                             .font(.caption2.weight(.bold))
                             .foregroundStyle(.white)
                     }
-                    .overlay(Circle().stroke(.vaultNavy, lineWidth: 2))
+                    .overlay(Circle().stroke(Color.vaultNavy, lineWidth: 2))
                 }
             }
         }
@@ -216,11 +216,11 @@ struct FileDetailView: View {
                 ForEach(document.tags, id: \.self) { tag in
                     Text("#\(tag)")
                         .font(.caption.weight(.medium))
-                        .foregroundStyle(.vaultCyan.opacity(0.8))
+                        .foregroundStyle(Color.vaultCyan.opacity(0.8))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
-                        .background(.vaultCyan.opacity(0.1), in: Capsule())
-                        .overlay(Capsule().stroke(.vaultCyan.opacity(0.2), lineWidth: 0.5))
+                        .background(Color.vaultCyan.opacity(0.1), in: Capsule())
+                        .overlay(Capsule().stroke(Color.vaultCyan.opacity(0.2), lineWidth: 0.5))
                 }
             }
         }

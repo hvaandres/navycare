@@ -119,7 +119,7 @@ struct FileShareView: View {
                         HStack(spacing: 12) {
                             Image(systemName: perm.systemImage)
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(selectedPermission == perm ? .vaultBlue : .white.opacity(0.5))
+                                .foregroundStyle(selectedPermission == perm ? Color.vaultBlue : Color.white.opacity(0.5))
                                 .frame(width: 20)
 
                             Text(perm.displayName)
@@ -130,7 +130,7 @@ struct FileShareView: View {
 
                             if selectedPermission == perm {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.vaultBlue)
+                                    .foregroundStyle(Color.vaultBlue)
                                     .font(.system(size: 16))
                             }
                         }
@@ -185,7 +185,7 @@ struct FileShareView: View {
                         if share.lastViewed != nil {
                             Image(systemName: "eye.fill")
                                 .font(.caption2)
-                                .foregroundStyle(.vaultCyan.opacity(0.6))
+                                .foregroundStyle(Color.vaultCyan.opacity(0.6))
                         }
                     }
                     .padding(.horizontal, 16)
