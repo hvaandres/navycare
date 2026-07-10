@@ -57,7 +57,11 @@ struct StorageHeaderView: View {
                 ringProgress = storageProgress
             }
         }
-    }
+        .onChange(of: storageProgress) { _, newValue in
+            withAnimation(.easeOut(duration: 0.6)) {
+                ringProgress = newValue
+            }
+        }
 
     // MARK: - Storage Ring
 
