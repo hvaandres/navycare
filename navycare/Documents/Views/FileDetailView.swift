@@ -189,7 +189,11 @@ struct FileDetailView: View {
             ForEach(Array(DocumentShare.mockShares.prefix(3))) { share in
                     ZStack {
                         Circle()
-                            .fill(Color(hex: "#2563EB").opacity(0.8))
+                            .fill(LinearGradient(
+                                colors: [Color.teal, Color.mint.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
                             .frame(width: 34, height: 34)
                         Text(share.contactInitials)
                             .font(.caption2.weight(.bold))

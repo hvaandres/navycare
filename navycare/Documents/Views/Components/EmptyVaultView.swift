@@ -92,13 +92,13 @@ struct EmptyVaultView: View {
                 .padding(.vertical, 16)
                 .background(
                     LinearGradient(
-                        colors: [.vaultBlue, Color(hex: "#1A6AFF")],
+                        colors: [Color.teal, Color.mint.opacity(0.85)],
                         startPoint: .leading,
                         endPoint: .trailing
                     ),
                     in: RoundedRectangle(cornerRadius: 16)
                 )
-                .shadow(color: .vaultBlue.opacity(0.5), radius: 14, x: 0, y: 8)
+                .shadow(color: Color.teal.opacity(0.5), radius: 14, x: 0, y: 8)
                 .padding(.horizontal, 40)
             }
             .buttonStyle(.plain)

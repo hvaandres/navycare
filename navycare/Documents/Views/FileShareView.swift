@@ -42,15 +42,15 @@ struct FileShareView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(
-                                LinearGradient(
-                                    colors: [.vaultBlue, Color(hex: "#1A6AFF")],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                ),
-                                in: RoundedRectangle(cornerRadius: 16)
-                            )
-                            .shadow(color: .vaultBlue.opacity(0.45), radius: 14, x: 0, y: 7)
+                .background(
+                    LinearGradient(
+                        colors: [Color.teal, Color.mint.opacity(0.85)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ),
+                    in: RoundedRectangle(cornerRadius: 16)
+                )
+                .shadow(color: Color.teal.opacity(0.45), radius: 14, x: 0, y: 7)
                         }
                         .buttonStyle(.plain)
                         .padding(.horizontal, 20)
@@ -162,7 +162,7 @@ struct FileShareView: View {
                         ZStack {
                             Circle()
                                 .fill(LinearGradient(
-                                    colors: [.vaultBlue, Color(hex: "#1A6AFF")],
+                                    colors: [Color.teal, Color.mint.opacity(0.8)],
                                     startPoint: .topLeading, endPoint: .bottomTrailing
                                 ))
                                 .frame(width: 36, height: 36)

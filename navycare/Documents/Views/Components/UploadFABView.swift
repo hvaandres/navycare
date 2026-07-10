@@ -59,7 +59,7 @@ struct UploadFABView: View {
                         Circle()
                             .fill(
                                 LinearGradient(
-                                    colors: [.vaultBlue, Color(hex: "#1A6AFF")],
+                                    colors: [Color.teal, Color.mint.opacity(0.8)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )

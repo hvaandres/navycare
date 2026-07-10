@@ -42,9 +42,9 @@ private struct OrbDef {
 }
 
 private let orbs: [OrbDef] = [
-    OrbDef(xFrac: 0.15, yFrac: 0.25, radius: 200, color: Color(hex: "#1A4A8A"), speed: 18, phase: 0.0),
-    OrbDef(xFrac: 0.80, yFrac: 0.55, radius: 160, color: Color(hex: "#0D3D6B"), speed: 22, phase: 2.1),
-    OrbDef(xFrac: 0.45, yFrac: 0.80, radius: 140, color: Color(hex: "#2F80FF"),  speed: 28, phase: 4.2),
+    OrbDef(xFrac: 0.15, yFrac: 0.25, radius: 200, color: Color(hex: "#0D3A3A"), speed: 18, phase: 0.0),
+    OrbDef(xFrac: 0.80, yFrac: 0.55, radius: 160, color: Color(hex: "#0A2E35"), speed: 22, phase: 2.1),
+    OrbDef(xFrac: 0.45, yFrac: 0.80, radius: 140, color: Color.teal.opacity(0.6), speed: 28, phase: 4.2),
 ]
 
 // MARK: - View

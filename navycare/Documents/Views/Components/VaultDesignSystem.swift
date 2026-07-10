@@ -14,9 +14,9 @@ extension Color {
     static let vaultOcean     = Color(hex: "#0D2744")
     static let vaultSurface   = Color(hex: "#0F2E52")
 
-    // Accent palette
-    static let vaultBlue      = Color(hex: "#2F80FF")
-    static let vaultCyan      = Color(hex: "#4FD1FF")
+    // Accent palette — matched to Circle feature's mint/teal signature
+    static let vaultBlue      = Color.teal          // matches Circle's LovedOne + online indicator
+    static let vaultCyan      = Color.mint          // matches Circle's glow rings
 
     // Status palette
     static let vaultSuccess   = Color(hex: "#34D399")
