@@ -20,7 +20,7 @@ struct MainTabView: View {
             }
 
             Tab("Documents", systemImage: "doc.text.fill") {
-                DocumentsView()
+                FilesView()
             }
 
             Tab("Settings", systemImage: "gearshape.fill") {
