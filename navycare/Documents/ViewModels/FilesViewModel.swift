@@ -7,7 +7,7 @@ import Observation
 // MARK: - Smart Card
 
 struct SmartCard: Identifiable {
-    let id      = UUID()
+    var id: String { title }
     let title:   String
     let metric:  String
     let icon:    String
